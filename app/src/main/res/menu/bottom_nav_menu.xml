@@ -11,11 +11,11 @@
         android:id="@+id/placeholder"
         android:title="" />
     <item
-        android:id="@+id/profile"
+        android:id="@+id/rep_management"
         android:icon="@drawable/person"
-        android:title="Profile" />
+        android:title="Rep Management" />
     <item
         android:id="@+id/settings"
         android:icon="@drawable/settings"
-        android:title="Settings" />
+        android:title="Setting" />
 </menu>

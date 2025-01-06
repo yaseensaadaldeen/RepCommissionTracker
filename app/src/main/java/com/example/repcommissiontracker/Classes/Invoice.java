@@ -15,6 +15,10 @@ public class Invoice {
         this.locId = locId;
     }
 
+    public Invoice() {
+
+    }
+
     public int getInvNo() {
         return invNo;
     }

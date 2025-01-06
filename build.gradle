@@ -18,4 +18,6 @@ buildscript {
 plugins {
     id 'com.android.application' version '8.7.3' apply false
     id 'androidx.navigation.safeargs' version '2.8.5' apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin.compose) apply false
 }

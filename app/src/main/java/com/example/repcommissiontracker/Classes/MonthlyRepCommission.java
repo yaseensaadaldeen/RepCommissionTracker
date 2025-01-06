@@ -14,6 +14,10 @@ public class MonthlyRepCommission {
         this.locId = locId;
     }
 
+    public MonthlyRepCommission() {
+
+    }
+
     public int getId() {
         return id;
     }

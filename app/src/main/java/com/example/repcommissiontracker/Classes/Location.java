@@ -12,6 +12,10 @@ public class Location {
         this.address = address;
     }
 
+    public Location() {
+
+    }
+
     public int getLocId() {
         return locId;
     }
@@ -35,4 +39,5 @@ public class Location {
     public void setAddress(String address) {
         this.address = address;
     }
+
 }

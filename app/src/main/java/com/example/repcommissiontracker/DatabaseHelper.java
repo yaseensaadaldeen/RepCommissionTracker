@@ -18,14 +18,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "SalesManagement.db";
     private static final int DATABASE_VERSION = 1;
 
-    // Table Names
+    
     public static final String TABLE_SALES_REP = "SalesRepresentative";
     public static final String TABLE_LOCATION = "Location";
     public static final String TABLE_INVOICE = "Invoice";
     public static final String TABLE_MONTHLY_SALES = "MonthlyRepSales";
     public static final String TABLE_MONTHLY_COMMISSION = "MonthlyRepCommission";
 
-    // SalesRepresentative Table Columns
+    
     public static final String SR_ID = "ID";
     public static final String SR_NAME = "Name";
     public static final String SR_IMAGE = "ImagePath";
@@ -33,33 +33,33 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String SR_START_DATE = "StartDate";
     public static final String SR_SUPERVISED_LOC = "SupervisedLocID";
 
-    // Location Table Columns
+    
     public static final String LOC_ID = "LocID";
     public static final String LOC_NAME = "Name";
     public static final String LOC_ADDRESS = "Address";
 
-    // Invoice Table Columns
+    
     public static final String INV_NO = "InvNo";
     public static final String INV_DATE = "CreatedDate";
     public static final String INV_TOTAL_PRICE = "TotalPrice";
     public static final String INV_SALES_REP_ID = "SalesRepID";
     public static final String INV_LOC_ID = "LocID";
 
-    // MonthlyRepSales Table Columns
+    
     public static final String MRS_ID = "ID";
     public static final String MRS_MONTH = "Month";
     public static final String MRS_SALES_VALUE = "SalesValue";
     public static final String MRS_REP_ID = "RepID";
     public static final String MRS_LOC_ID = "LocID";
 
-    // MonthlyRepCommission Table Columns
+    
     public static final String MRC_ID = "ID";
     public static final String MRC_MONTH = "Month";
     public static final String MRC_COMMISSION_VALUE = "CommissionValue";
     public static final String MRC_REP_ID = "RepID";
     public static final String MRC_LOC_ID = "LocID";
 
-    // Create Table Statements
+    
     private static final String CREATE_TABLE_SALES_REP = "CREATE TABLE " + TABLE_SALES_REP + "("
             + SR_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
             + SR_NAME + " TEXT NOT NULL, "
@@ -112,7 +112,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(CREATE_TABLE_LOCATION); // Create Location first because SalesRep references it
+        db.execSQL(CREATE_TABLE_LOCATION); 
         db.execSQL(CREATE_TABLE_SALES_REP);
         db.execSQL(CREATE_TABLE_INVOICE);
         db.execSQL(CREATE_TABLE_MONTHLY_SALES);
@@ -122,14 +122,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-        // Drop older tables if existed
+        
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_MONTHLY_COMMISSION);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_MONTHLY_SALES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_INVOICE);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_SALES_REP);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_LOCATION);
 
-        // Create tables again
+        
         onCreate(db);
     }
     public int getSupervisedLocation(int repId) {
@@ -153,7 +153,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.setForeignKeyConstraintsEnabled(true);
     }
 
-    // CRUD Operations (To be implemented below)
+    
     public long addSalesRep(SalesRepresentative rep) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -170,7 +170,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public List<SalesRepresentative> getAllSalesReps() {
         List<SalesRepresentative> reps = new ArrayList<>();
         String selectQuery = "SELECT * FROM " + TABLE_SALES_REP;
-
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
 
@@ -200,7 +199,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(SR_START_DATE, rep.getStartDate());
         values.put(SR_SUPERVISED_LOC, rep.getSupervisedLocId());
 
-        // updating row
+        
         int result = db.update(TABLE_SALES_REP, values, SR_ID + " = ?",
                 new String[]{String.valueOf(rep.getId())});
         db.close();
@@ -242,7 +241,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, new String[]{
                 String.valueOf(repId),
-                month, // Ensure month is in two-digit format, e.g., "09"
+                month, 
                 year
         });
 
@@ -290,10 +289,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         List<Invoice> invoices = getInvoicesByRepAndMonth(repId, month, year);
         double totalCommission = 0.0;
 
-        // Assuming you have a method to get the supervised location of a rep
+        
         int supervisedLocId = getSupervisedLocation(repId);
 
-        // Group sales by location
+        
         Map<Integer, Double> salesByLoc = new HashMap<>();
         for (Invoice invoice : invoices) {
             int locId = invoice.getLocId();
@@ -311,7 +310,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             double commission = 0.0;
 
             if (locId == supervisedLocId) {
-                // Primary region commission
+                
                 if (amount <= 100_000_000) {
                     commission += amount * 0.05;
                 } else {
@@ -319,7 +318,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     commission += (amount - 100_000_000) * 0.07;
                 }
             } else {
-                // Other regions commission
+                
                 if (amount <= 100_000_000) {
                     commission += amount * 0.03;
                 } else {
@@ -330,8 +329,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             totalCommission += commission;
 
-            // Optionally, store individual commission per location
-            // Add to MonthlyRepCommission table
+            
+            
             MonthlyRepCommission commissionRecord = new MonthlyRepCommission();
             commissionRecord.setMonth(month);
             commissionRecord.setCommissionValue(commission);

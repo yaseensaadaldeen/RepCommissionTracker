@@ -1,29 +1,31 @@
-package com.example.repcommissiontracker;
+package com.example.repcommissiontracker.RepManagement;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.example.repcommissiontracker.Invoice.InvoiceAdd;
-import com.example.repcommissiontracker.RepManagement.RepManagementActivity;
+import com.example.repcommissiontracker.MainActivity;
+import com.example.repcommissiontracker.R;
 import com.example.repcommissiontracker.Settings.SettingsActivity;
 import com.example.repcommissiontracker.search.ui.SearchActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-public class MainActivity extends AppCompatActivity {
+public class RepManagementActivity extends AppCompatActivity {
     FloatingActionButton fab;
     Intent intent;
     BottomNavigationView bottomNavigationView;
-    @SuppressLint("NonConstantResourceId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        bottomNavigationView = findViewById(R.id.bottomNavigationView);
+        setContentView(R.layout.activity_rep_management);
+         bottomNavigationView = findViewById(R.id.bottomNavigationView);
         fab = findViewById(R.id.fab);
         intent = null;
         fab.setOnClickListener(v ->{ intent = new Intent(this, InvoiceAdd.class) ;
@@ -34,23 +36,24 @@ public class MainActivity extends AppCompatActivity {
                 overridePendingTransition(0, 0); // No animation between activities
             }});
 
-
         bottomNavigationView.setBackground(null); // Remove background for transparency
+        bottomNavigationView.setSelectedItemId(R.id.rep_management);
+
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
-            intent = null;
+            Intent intent = null;
 
             switch (item.getItemId()) {
                 case R.id.home:
-                    intent = new Intent(MainActivity.this, MainActivity.class);
+                    intent = new Intent(this, MainActivity.class);
                     break;
                 case R.id.search:
-                    intent = new Intent(MainActivity.this, SearchActivity.class);
+                    intent = new Intent(this, SearchActivity.class);
                     break;
                 case R.id.rep_management:
-                    intent = new Intent(MainActivity.this, RepManagementActivity.class);
+                    intent = new Intent(this, RepManagementActivity.class);
                     break;
                 case R.id.settings:
-                    intent = new Intent(MainActivity.this, SettingsActivity.class);
+                    intent = new Intent(this, SettingsActivity.class);
                     break;
             }
 
@@ -61,10 +64,10 @@ public class MainActivity extends AppCompatActivity {
 
             return true; // Return true to indicate item selection
         });
-        bottomNavigationView.setSelectedItemId(getLayoutResourceId());
+
     }
 
     protected int getLayoutResourceId() {
-        return R.layout.activity_main;
+        return R.layout.activity_rep_management;
     }
 }

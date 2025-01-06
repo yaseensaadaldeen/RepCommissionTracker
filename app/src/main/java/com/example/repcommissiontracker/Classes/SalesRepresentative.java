@@ -17,6 +17,10 @@ public class SalesRepresentative {
         this.supervisedLocId = supervisedLocId;
     }
 
+    public SalesRepresentative() {
+
+    }
+
     public int getId() {
         return id;
     }
