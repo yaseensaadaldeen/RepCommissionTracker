@@ -12,7 +12,7 @@
         android:title="" />
     <item
         android:id="@+id/rep_management"
-        android:icon="@drawable/person"
+        android:icon="@drawable/manage_accounts_26"
         android:title="Rep Management" />
     <item
         android:id="@+id/settings"

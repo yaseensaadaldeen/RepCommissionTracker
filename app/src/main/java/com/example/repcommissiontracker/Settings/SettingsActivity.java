@@ -32,6 +32,7 @@ public class SettingsActivity extends AppCompatActivity {
             bottomNavigationView.setOnNavigationItemSelectedListener(null);
             bottomNavigationView.setSelectedItemId(R.id.placeholder);
             if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 overridePendingTransition(0, 0); // No animation between activities
             }});
@@ -57,6 +58,7 @@ public class SettingsActivity extends AppCompatActivity {
             }
 
             if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 overridePendingTransition(0, 0); // No animation between activities
             }
@@ -68,6 +70,14 @@ public class SettingsActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+    }
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
     protected int getLayoutResourceId() {
         return R.layout.activity_settings;

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.repcommissiontracker.Invoice.InvoiceAdd;
@@ -30,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
             bottomNavigationView.setOnNavigationItemSelectedListener(null);
             bottomNavigationView.setSelectedItemId(R.id.placeholder);
             if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 overridePendingTransition(0, 0); // No animation between activities
             }});
@@ -55,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 overridePendingTransition(0, 0); // No animation between activities
             }
@@ -67,4 +70,24 @@ public class MainActivity extends AppCompatActivity {
     protected int getLayoutResourceId() {
         return R.layout.activity_main;
     }
+
+    @Override
+    public void onBackPressed() {
+        // Show a confirmation dialog instead of closing the app
+        super.onBackPressed();
+        new AlertDialog.Builder(this)
+                .setTitle("Exit App")
+                .setMessage("Are you sure you want to exit the app?")
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    // Exit the app
+                    finishAffinity(); // This closes all activities in the stack
+                })
+                .setNegativeButton("No", (dialog, which) -> {
+                    // Dismiss the dialog
+                    dialog.dismiss();
+                })
+                .setCancelable(true)
+                .show();
+    }
+
 }
