@@ -1,5 +1,6 @@
 package com.example.repcommissiontracker.RepManagement;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -21,15 +22,17 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class RepManagementActivity extends AppCompatActivity {
-    FloatingActionButton fab;
+    FloatingActionButton fab,addRepButton;
     Intent intent;
     SearchView searchView ;
+    Context context;
     BottomNavigationView bottomNavigationView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rep_management);
          bottomNavigationView = findViewById(R.id.bottomNavigationView);
+        context = getBaseContext();
          searchView=findViewById(R.id.searchView);
         searchView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -38,7 +41,22 @@ public class RepManagementActivity extends AppCompatActivity {
             }
         });
         fab = findViewById(R.id.fab);
+        addRepButton = findViewById(R.id.addRepButton);
         intent = null;
+        addRepButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Open the rep_add_dialog when the button is clicked
+                rep_add_dialog dialog = new rep_add_dialog(getBaseContext()) {
+                    @Override
+                    public void onCreate(Bundle savedInstanceState) {
+                        super.onCreate(savedInstanceState);
+                        // Initialize dialog layout and setup the spinner
+                    }
+                };
+                dialog.show();  // Show the dialog
+            }
+        });
         fab.setOnClickListener(v ->{ intent = new Intent(this, InvoiceAdd.class) ;
             bottomNavigationView.setOnNavigationItemSelectedListener(null);
             bottomNavigationView.setSelectedItemId(R.id.placeholder);

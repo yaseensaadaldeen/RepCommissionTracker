@@ -59,6 +59,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String MRC_REP_ID = "RepID";
     public static final String MRC_LOC_ID = "LocID";
 
+
     
     private static final String CREATE_TABLE_SALES_REP = "CREATE TABLE " + TABLE_SALES_REP + "("
             + SR_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -105,9 +106,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + "FOREIGN KEY(" + MRC_REP_ID + ") REFERENCES " + TABLE_SALES_REP + "(" + SR_ID + "), "
             + "FOREIGN KEY(" + MRC_LOC_ID + ") REFERENCES " + TABLE_LOCATION + "(" + LOC_ID + ")"
             + ");";
+    Context context;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        this.context=context;
     }
 
     @Override
@@ -117,8 +120,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_INVOICE);
         db.execSQL(CREATE_TABLE_MONTHLY_SALES);
         db.execSQL(CREATE_TABLE_MONTHLY_COMMISSION);
-    }
 
+        insertLocations();
+    }
+    public void insertLocations() {
+        DatabaseHelper dbHelper = new DatabaseHelper(context);
+
+        // قائمة المواقع المستخرجة مع locId, name, و address
+        List<Location> locations = new ArrayList<>();
+        locations.add(new Location(1, "دمشق", "مركز الشركة"));
+        locations.add(new Location(2, "المنطقة الساحلية", "سوريا"));
+        locations.add(new Location(3, "المنطقة الشمالية", "سوريا"));
+        locations.add(new Location(4, "المنطقة الجنوبية", "سوريا"));
+        locations.add(new Location(5, "المنطقة الشرقية", "سوريا"));
+        locations.add(new Location(6, "لبنان", ""));
+
+        for (Location loc : locations) {
+            dbHelper.addLocation(loc);
+        }
+    }
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
