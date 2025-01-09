@@ -5,18 +5,37 @@ import android.graphics.Bitmap;
 public class SalesRepresentative {
     private int id;
     private String name;
-    private Bitmap imagePath; // Store the path to the image
+    private Bitmap imageBitmap; // Store the path to the image
     private String phoneNumber;
     private String startDate;
     private int supervisedLocId;
 
-    public SalesRepresentative(int id, String name, Bitmap imagePath, String phoneNumber, String startDate, int supervisedLocId) {
+    public String getSupervisedLocName() {
+        return supervisedLocName;
+    }
+
+    public void setSupervisedLocName(String supervisedLocName) {
+        this.supervisedLocName = supervisedLocName;
+    }
+
+    private String supervisedLocName;
+
+
+    public SalesRepresentative(int id, String name, Bitmap imageBitmap, String phoneNumber, String startDate, int supervisedLocId) {
         this.id = id;
         this.name = name;
-        this.imagePath = imagePath;
+        this.imageBitmap = imageBitmap;
         this.phoneNumber = phoneNumber;
         this.startDate = startDate;
         this.supervisedLocId = supervisedLocId;
+    }
+    public SalesRepresentative(int id, String name, Bitmap imageBitmap, String phoneNumber, String startDate, String supervisedLocName) {
+        this.id = id;
+        this.name = name;
+        this.imageBitmap = imageBitmap;
+        this.phoneNumber = phoneNumber;
+        this.startDate = startDate;
+        this.supervisedLocName = supervisedLocName;
     }
 
     public SalesRepresentative() {
@@ -39,12 +58,12 @@ public class SalesRepresentative {
         this.name = name;
     }
 
-    public Bitmap getImagePath() {
-        return imagePath;
+    public Bitmap getImageBitmap() {
+        return imageBitmap;
     }
 
-    public void setImagePath(Bitmap imagePath) {
-        this.imagePath = imagePath;
+    public void setImageBitmap(Bitmap imageBitmap) {
+        this.imageBitmap = imageBitmap;
     }
 
     public String getPhoneNumber() {

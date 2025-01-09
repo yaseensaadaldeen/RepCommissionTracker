@@ -1,6 +1,6 @@
 package com.example.repcommissiontracker.Adapters;
 import android.content.Context;
-import android.content.Intent;
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +16,6 @@ import com.example.repcommissiontracker.R;
 import java.util.List;
 
 public class RepAdapter extends RecyclerView.Adapter<RepAdapter.RepViewHolder> {
-
     private Context context;
     private List<SalesRepresentative> repList;
 
@@ -24,6 +23,18 @@ public class RepAdapter extends RecyclerView.Adapter<RepAdapter.RepViewHolder> {
         this.context = context;
         this.repList = repList;
     }
+    public interface OnRepClickListener {
+        void onRepClick(SalesRepresentative representative);
+    }
+
+    private OnRepClickListener onRepClickListener;
+
+    public void setOnRepClickListener(OnRepClickListener listener) {
+        this.onRepClickListener = listener;
+    }
+
+// In onBindViewHolder
+
 
     @NonNull
     @Override
@@ -34,40 +45,45 @@ public class RepAdapter extends RecyclerView.Adapter<RepAdapter.RepViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull RepViewHolder holder, int position) {
-        SalesRepresentative currentRep = repList.get(position);
-        holder.repName.setText(currentRep.getName());
-        holder.repPhone.setText(currentRep.getPhoneNumber());
-        holder.repStartDate.setText(currentRep.getStartDate());
-        holder.repLocation.setText(currentRep.getSupervisedLocId());
+        SalesRepresentative rep = repList.get(position);
 
-        // Info button click listener to navigate to RepDetailsActivity
-        holder.repInfoIcon.setOnClickListener(v -> {
-//            Intent intent = new Intent(context, RepDetailsActivity.class);
-//            intent.putExtra("rep_name", currentRep.getName());
-//            intent.putExtra("rep_phone", currentRep.getPhone());
-//            intent.putExtra("rep_start_date", currentRep.getStartDate());
-//            intent.putExtra("rep_location", currentRep.getLocation());
-//            context.startActivity(intent);
+        holder.nameTextView.setText(rep.getName());
+        holder.phoneTextView.setText("Phone: " + rep.getPhoneNumber());
+        holder.startDateTextView.setText("Start Date: " + rep.getStartDate());
+        holder.locationTextView.setText("Location ID: " + rep.getSupervisedLocName());
+        holder.itemView.setOnClickListener(v -> {
+            if (onRepClickListener != null) {
+                onRepClickListener.onRepClick(rep);
+            }
         });
+        Bitmap image = rep.getImageBitmap(); // Assuming `imagePath` contains the image Bitmap
+        if (image != null) {
+            holder.imageView.setImageBitmap(image);
+        } else {
+           // holder.imageView.setImageResource(R.drawable.default_rep_image); // Fallback image
+        }
     }
 
     @Override
     public int getItemCount() {
         return repList.size();
     }
-
+    // Method to update the dataset and refresh the RecyclerView
+    public void updateData(List<SalesRepresentative> newRepList) {
+        this.repList = newRepList; // Update the dataset
+        notifyDataSetChanged();   // Notify the RecyclerView to refresh
+    }
     public static class RepViewHolder extends RecyclerView.ViewHolder {
+        TextView nameTextView, phoneTextView, startDateTextView, locationTextView;
+        ImageView imageView;
 
-        TextView repName, repPhone, repStartDate, repLocation;
-        ImageView repInfoIcon;
-
-        public RepViewHolder(View itemView) {
+        public RepViewHolder(@NonNull View itemView) {
             super(itemView);
-            repName = itemView.findViewById(R.id.rep_name);
-            repPhone = itemView.findViewById(R.id.rep_phone);
-            repStartDate = itemView.findViewById(R.id.rep_start_date);
-            repLocation = itemView.findViewById(R.id.rep_location);
-            repInfoIcon = itemView.findViewById(R.id.rep_info_icon);
+            nameTextView = itemView.findViewById(R.id.rep_name);
+            phoneTextView = itemView.findViewById(R.id.rep_phone);
+            startDateTextView = itemView.findViewById(R.id.rep_start_date);
+            locationTextView = itemView.findViewById(R.id.rep_location);
+            imageView = itemView.findViewById(R.id.rep_image);
         }
     }
 }

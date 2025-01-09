@@ -166,9 +166,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(SR_NAME, rep.getName());
 
         // Convert the Bitmap image to byte[] and store it
-        if (rep.getImagePath() != null) {
+        if (rep.getImageBitmap() != null) {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            rep.getImagePath().compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+            rep.getImageBitmap().compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
             byte[] imageByteArray = byteArrayOutputStream.toByteArray();
             values.put(SR_IMAGE, imageByteArray);
         }
@@ -187,7 +187,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public List<SalesRepresentative> getAllSalesReps() {
         List<SalesRepresentative> reps = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_SALES_REP, null);
+
+        // SQL query to join SalesRep table with Location table to get location names
+        String query = "SELECT sr.*, loc." + LOC_NAME + " AS LocationName " +
+                "FROM " + TABLE_SALES_REP + " sr " +
+                "LEFT JOIN " + TABLE_LOCATION + " loc " +
+                "ON sr." + SR_SUPERVISED_LOC + " = loc." + LOC_ID;
+
+        Cursor cursor = db.rawQuery(query, null);
 
         if (cursor.moveToFirst()) {
             do {
@@ -198,29 +205,35 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 rep.setStartDate(cursor.getString(cursor.getColumnIndexOrThrow(SR_START_DATE)));
                 rep.setSupervisedLocId(cursor.getInt(cursor.getColumnIndexOrThrow(SR_SUPERVISED_LOC)));
 
+                // Get the location name instead of ID
+                String locationName = cursor.getString(cursor.getColumnIndexOrThrow("LocationName"));
+                rep.setSupervisedLocName(locationName);  // Assuming you add a method or field for location name in SalesRepresentative
+
                 // Retrieve the image BLOB and convert it to Bitmap
                 byte[] imageBytes = cursor.getBlob(cursor.getColumnIndexOrThrow(SR_IMAGE));
                 if (imageBytes != null) {
                     Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-                    rep.setImagePath(bitmap);  // Assuming SalesRepresentative has a Bitmap field for image
+                    rep.setImageBitmap(bitmap);  // Assuming SalesRepresentative has a Bitmap field for image
                 }
 
                 reps.add(rep);
             } while (cursor.moveToNext());
         }
+
         cursor.close();
         db.close();
         return reps;
     }
 
-    public int updateSalesRep(SalesRepresentative rep, Bitmap bitmap) {
+
+    public int updateSalesRep(SalesRepresentative rep ) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(SR_NAME, rep.getName());
         values.put(SR_PHONE, rep.getPhoneNumber());
         values.put(SR_START_DATE, rep.getStartDate());
         values.put(SR_SUPERVISED_LOC, rep.getSupervisedLocId());
-
+        Bitmap bitmap = rep.getImageBitmap();
         // Convert the Bitmap to a byte array
         if (bitmap != null) {
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -255,7 +268,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             byte[] imageBytes = cursor.getBlob(cursor.getColumnIndexOrThrow(SR_IMAGE));
             if (imageBytes != null) {
                 Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
-                rep.setImagePath(bitmap); // Assuming you have a setImage(Bitmap) method in SalesRepresentative
+                rep.setImageBitmap(bitmap); // Assuming you have a setImage(Bitmap) method in SalesRepresentative
             }
 
             rep.setPhoneNumber(cursor.getString(cursor.getColumnIndexOrThrow(SR_PHONE)));
