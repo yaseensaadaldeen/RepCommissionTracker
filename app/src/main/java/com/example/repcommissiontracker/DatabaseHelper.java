@@ -1,5 +1,6 @@
 package com.example.repcommissiontracker;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -54,6 +55,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String MRS_SALES_VALUE = "SalesValue";
     private static final String MRS_REP_ID = "RepID";
     private static final String MRS_LOC_ID = "LocID";
+    private static final String MRS_Year = "Year";
 
     // Column Names for MonthlyRepCommission Table
     private static final String MRC_ID = "ID";
@@ -61,6 +63,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String MRC_COMMISSION_VALUE = "CommissionValue";
     private static final String MRC_REP_ID = "RepID";
     private static final String MRC_LOC_ID = "LocID";
+    private static final String MRC_Year = "Year";
 
     // Table Creation Statements
     private static final String CREATE_TABLE_SALES_REP = "CREATE TABLE " + TABLE_SALES_REP + "(" +
@@ -95,6 +98,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             MRS_SALES_VALUE + " REAL, " +
             MRS_REP_ID + " INTEGER, " +
             MRS_LOC_ID + " INTEGER, " +
+            MRS_Year + " INTEGER, " +
             "FOREIGN KEY(" + MRS_REP_ID + ") REFERENCES " + TABLE_SALES_REP + "(" + SR_ID + "), " +
             "FOREIGN KEY(" + MRS_LOC_ID + ") REFERENCES " + TABLE_LOCATION + "(" + LOC_ID + ")" +
             ");";
@@ -105,6 +109,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             MRC_COMMISSION_VALUE + " REAL, " +
             MRC_REP_ID + " INTEGER, " +
             MRC_LOC_ID + " INTEGER, " +
+            MRC_Year + " INTEGER, " +
             "FOREIGN KEY(" + MRC_REP_ID + ") REFERENCES " + TABLE_SALES_REP + "(" + SR_ID + "), " +
             "FOREIGN KEY(" + MRC_LOC_ID + ") REFERENCES " + TABLE_LOCATION + "(" + LOC_ID + ")" +
             ");";
@@ -368,6 +373,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(MRS_SALES_VALUE, sales.getSalesValue());
         values.put(MRS_REP_ID, sales.getRepId());
         values.put(MRS_LOC_ID, sales.getLocId());
+        values.put(MRS_Year, sales.getLocId());
 
         long id = db.insert(TABLE_MONTHLY_SALES, null, values);
         //db.close();
@@ -506,4 +512,85 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
         return -1; // Not found
     }
+    public boolean isMonthlySalesExist(long repId, int month, int year) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_MONTHLY_SALES +
+                " WHERE " + MRS_REP_ID + " = ? AND " +
+                MRS_MONTH + " = ? AND " +
+                MRS_Year+ " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(repId), String.valueOf(month), String.valueOf(year)});
+        boolean exists = cursor.getCount() > 0;
+        cursor.close();
+        return exists;
+    }
+
+    public double calculateTotalSalesForRep(long repId, int month, int year) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT SUM(" + INV_TOTAL_PRICE + ") FROM " + TABLE_INVOICE +
+                " WHERE " + INV_SALES_REP_ID + " = ? AND strftime('%m', " + INV_DATE + ") = ? AND strftime('%Y', " + INV_DATE + ") = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(repId), String.format("%02d", month), String.valueOf(year)});
+
+        double totalSales = 0;
+        if (cursor.moveToFirst()) {
+            totalSales = cursor.getDouble(0);
+        }
+        cursor.close();
+        return totalSales;
+    }
+
+    public void updateMonthlyRepSales(MonthlyRepSales sales) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(MRS_SALES_VALUE, sales.getSalesValue());
+        values.put(MRS_MONTH, sales.getMonth());
+        values.put(MRS_Year, sales.getYear()); // Include year in the update
+
+        db.update(TABLE_MONTHLY_SALES, values, MRS_REP_ID + " = ? AND " + MRS_MONTH + " = ? AND Year = ?",
+                new String[]{String.valueOf(sales.getRepId()), String.valueOf(sales.getMonth()), String.valueOf(sales.getYear())});
+    }
+
+    public long getRepIdByName(String name) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_SALES_REP, new String[]{SR_ID}, SR_NAME + " = ?",
+                new String[]{name}, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            @SuppressLint("Range") long repId = cursor.getLong(cursor.getColumnIndex(SR_ID));
+            cursor.close();
+            return repId;
+        }
+        return -1;
+    }
+
+    @SuppressLint("Range")
+    public String[] getAllRepNames() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.query(TABLE_SALES_REP, new String[]{SR_ID}, null, null, null, null, null);
+        List<String> repNames = new ArrayList<>();
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                repNames.add(cursor.getString(cursor.getColumnIndex(SR_NAME)));
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        return repNames.toArray(new String[0]);
+    }
+    @SuppressLint("Range")
+    public int getLocationIdForRep(long repId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        // Query to get the location ID for a given representative
+        String query = "SELECT " + SR_SUPERVISED_LOC + " FROM " + TABLE_SALES_REP +
+                " WHERE " + SR_ID + " = ?";
+
+        // Run the query
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(repId)});
+
+        int locationId = -1; // Default value if no result found
+        if (cursor != null && cursor.moveToFirst()) {
+            locationId = cursor.getInt(cursor.getColumnIndex(SR_SUPERVISED_LOC)); // Get the location ID
+            cursor.close();
+        }
+
+        return locationId; // Return the location ID
+    }
+
 }

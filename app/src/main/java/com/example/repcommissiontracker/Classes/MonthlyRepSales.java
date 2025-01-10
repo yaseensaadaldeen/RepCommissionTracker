@@ -6,13 +6,20 @@ public class MonthlyRepSales {
     private double salesValue;
     private int repId;
     private int locId;
+    private int year;
 
-    public MonthlyRepSales(int id, String month, double salesValue, int repId, int locId) {
+    public MonthlyRepSales(int id, String month, double salesValue, int repId, int locId,int year) {
         this.id = id;
         this.month = month;
         this.salesValue = salesValue;
         this.repId = repId;
         this.locId = locId;
+        this.year = year;
+
+    }
+
+    public MonthlyRepSales() {
+
     }
 
     public int getId() {
@@ -26,9 +33,15 @@ public class MonthlyRepSales {
     public String getMonth() {
         return month;
     }
+    public int getYear() {
+        return year;
+    }
 
     public void setMonth(String month) {
         this.month = month;
+    }
+    public void setYear(int year) {
+        this.year = year;
     }
 
     public double getSalesValue() {

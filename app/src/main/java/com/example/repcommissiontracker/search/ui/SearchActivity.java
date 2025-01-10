@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentTransaction;
+
 import com.example.repcommissiontracker.Invoice.InvoiceAdd;
 import com.example.repcommissiontracker.MainActivity;
 import com.example.repcommissiontracker.R;
@@ -35,7 +37,20 @@ public class SearchActivity extends AppCompatActivity {
         fab = findViewById(R.id.fab);
         btnSales = findViewById(R.id.btnSales);
         btnCommission = findViewById(R.id.btnCommission);
+        btnSales.setOnClickListener(v -> {
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragmentContainer, new RepSalesFragment());
+            transaction.addToBackStack(null);  // Allows going back to SearchActivity
+            transaction.commit();
+        });
 
+        // Navigate to Rep Commission Fragment
+        btnCommission.setOnClickListener(v -> {
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragmentContainer, new RepCommFragment());
+            transaction.addToBackStack(null);  // Allows going back to SearchActivity
+            transaction.commit();
+        });
         intent = null;
     }
 
