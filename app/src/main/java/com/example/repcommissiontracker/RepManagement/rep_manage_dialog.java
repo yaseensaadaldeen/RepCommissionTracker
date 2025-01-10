@@ -47,7 +47,14 @@ public class rep_manage_dialog extends Dialog {
     public interface ImageSelectionListener {
         void onImageSelected(Bitmap image);
     }
+    private Bitmap pendingImageBitmap; // Temporary storage for selected image
 
+    public void setPendingImage(Bitmap image) {
+        this.pendingImageBitmap = image;
+        if (imageViewRep != null) {
+            onImagePicked(image); // Apply the image if the dialog is initialized
+        }
+    }
     private ImageSelectionListener imageSelectionListener;
 
     public rep_manage_dialog(@NonNull Context context, ImageSelectionListener listener) {
@@ -88,7 +95,11 @@ public class rep_manage_dialog extends Dialog {
         Button selectImageButton = findViewById(R.id.select_image_button);
 
         selectImageButton.setOnClickListener(v -> openImageChooser());
-
+        // Apply the pending image if available
+        if (pendingImageBitmap != null) {
+            onImagePicked(pendingImageBitmap);
+            pendingImageBitmap = null; // Clear pending image after applying
+        }
         // Cancel button listener
         btnCancel.setOnClickListener(v -> cancel());
 
@@ -121,7 +132,14 @@ public class rep_manage_dialog extends Dialog {
         } else {
             btnDelete.setVisibility(View.GONE);
         }
+
     }
+    private RepManagementActivity.ImageUpdateListener imageUpdateListener;
+
+    public void setImageUpdateListener(RepManagementActivity.ImageUpdateListener listener) {
+        this.imageUpdateListener = listener;
+    }
+
 
     private void openImageChooser() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -134,7 +152,8 @@ public class rep_manage_dialog extends Dialog {
     public void onImagePicked(Bitmap image) {
         if (image != null) {
             this.selectedImageBitmap = image;
-            imageViewRep.setImageBitmap(image);
+            if (imageViewRep != null)
+                imageViewRep.setImageBitmap(image);
 
             // Update the image in the SalesRepresentative object if editing
             if (isEditMode && currentRep != null) {
@@ -181,17 +200,22 @@ public class rep_manage_dialog extends Dialog {
         btnDelete.setVisibility(View.VISIBLE); // Make the "Delete" button visible
     }
 
-    private void resetFields() {
-        edtName.setText("");
-        edtPhone.setText("");
-        edtStartDate.setText("");
-        locationSpinner.setSelection(0); // Optionally reset the spinner to default value
-        imageViewRep.setImageResource(android.R.drawable.ic_menu_gallery); // Set to default or empty image
-        selectedImageBitmap = null;  // Clear the image bitmap
-        btnDelete.setVisibility(View.GONE); // Hide the delete button in non-edit mode
-        txtDialogTitle.setText("إضافة مندوب");
-        btnSave.setText("إضافة");
+    public void resetFields() {
+        if (edtName != null) {
+            edtName.setText("");
+            edtPhone.setText("");
+            edtStartDate.setText("");
+            locationSpinner.setSelection(0); // Reset to the first option in the spinner
+            imageViewRep.setImageResource(android.R.drawable.ic_menu_gallery); // Set a default placeholder image
+            selectedImageBitmap = null; // Clear the image
+            currentRep = null; // Clear the current representative object
+            isEditMode = false; // Switch to add mode
+            txtDialogTitle.setText("إضافة مندوب"); // Update dialog title for adding
+            btnSave.setText("إضافة"); // Update button text for adding
+            btnDelete.setVisibility(View.GONE); // Hide delete button in add mode
+        }
     }
+
 
     private void addSalesRep() {
         handleSalesRepOperation(false);

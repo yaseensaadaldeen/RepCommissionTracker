@@ -29,6 +29,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RepManagementActivity extends AppCompatActivity implements rep_manage_dialog.ImageSelectionListener {
@@ -37,6 +38,7 @@ public class RepManagementActivity extends AppCompatActivity implements rep_mana
     SearchView searchView;
     Context context;
     BottomNavigationView bottomNavigationView;
+    RepAdapter adapter;
     private rep_manage_dialog listDialog; // Declare the dialog here
 
     @Override
@@ -53,16 +55,59 @@ public class RepManagementActivity extends AppCompatActivity implements rep_mana
         intent = null;
         // Initialize listDialog here
         listDialog = new rep_manage_dialog(RepManagementActivity.this, RepManagementActivity.this);
-        setupSearchView();
+        listDialog = new rep_manage_dialog(this);
+        listDialog.setImageUpdateListener(image -> {
+            if (listDialog.isShowing()) {
+                listDialog.onImagePicked(image); // Update the image in the dialog
+            }
+        });
         setupFab();
         setupToolbar();
         setupBottomNavigation();
         setupAddRepButton(recyclerView);
         loadReps(recyclerView);
+        setupSearchView();
+    }
+    public interface ImageUpdateListener {
+        void updateImage(Bitmap image);
     }
     private void setupSearchView() {
+        // Expand the search view on click
         searchView.setOnClickListener(v -> searchView.setIconified(false));
+        DatabaseHelper dbHelper = new DatabaseHelper(this);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // Perform the search when the user submits the query
+                filterReps(query, adapter, dbHelper);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                // Perform live filtering as the user types
+                filterReps(newText, adapter, dbHelper);
+                return true;
+            }
+        });
     }
+    private void filterReps(String query, RepAdapter adapter, DatabaseHelper dbHelper) {
+        // Retrieve all sales representatives
+        List<SalesRepresentative> allReps = dbHelper.getAllSalesReps();
+
+        // Filter the list based on the query
+        List<SalesRepresentative> filteredList = new ArrayList<>();
+        for (SalesRepresentative rep : allReps) {
+            if (rep.getName().toLowerCase().contains(query.toLowerCase()) ||
+                    rep.getPhoneNumber().contains(query)) {
+                filteredList.add(rep);
+            }
+        }
+
+        // Update the adapter with the filtered list
+        adapter.updateData(filteredList);
+    }
+
     private void setupFab() {
         fab.setOnClickListener(v -> {
             intent = new Intent(this, InvoiceAdd.class);
@@ -104,30 +149,33 @@ public class RepManagementActivity extends AppCompatActivity implements rep_mana
         });
     }
     private void setupAddRepButton(RecyclerView recyclerView) {
-        listDialog = new rep_manage_dialog(RepManagementActivity.this, RepManagementActivity.this);
         addRepButton.setOnClickListener(v -> {
+            if (listDialog != null) {
+                listDialog.resetFields(); // Reset fields to clear old data
+            }
             // Open the rep_add_dialog when the button is clicked
             WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
             lp.copyFrom(listDialog.getWindow().getAttributes());
             lp.width = WindowManager.LayoutParams.MATCH_PARENT;
-            lp.height =  WindowManager.LayoutParams.WRAP_CONTENT;;
+            lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
             listDialog.show();
             listDialog.getWindow().setAttributes(lp);
             listDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             listDialog.setOnDismissListener(s -> {
                 DatabaseHelper dbHelper2 = new DatabaseHelper(RepManagementActivity.this);
                 List<SalesRepresentative> repList2 = dbHelper2.getAllSalesReps();
-                RepAdapter adapter = (RepAdapter) recyclerView.getAdapter();
+
                 if (adapter != null) {
                     adapter.updateData(repList2);
                 }
             });
         });
     }
+
     private void loadReps(RecyclerView recyclerView) {
         DatabaseHelper dbHelper = new DatabaseHelper(this);
         List<SalesRepresentative> repList = dbHelper.getAllSalesReps();
-        RepAdapter adapter = new RepAdapter(this, repList);
+         adapter = new RepAdapter(this, repList);
         adapter.setOnRepClickListener(rep -> {
             // Open the dialog and pass the clicked SalesRepresentative object
             rep_manage_dialog dialog = new rep_manage_dialog(this, this);

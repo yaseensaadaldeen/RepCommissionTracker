@@ -19,6 +19,13 @@ public class Invoice {
 
     }
 
+    public Invoice(String date, double totalPrice, int salesRepId, int locId) {
+
+        this.createdDate = date;
+        this.totalPrice = totalPrice;
+        this.salesRepId = salesRepId;
+        this.locId = locId;    }
+
     public int getInvNo() {
         return invNo;
     }

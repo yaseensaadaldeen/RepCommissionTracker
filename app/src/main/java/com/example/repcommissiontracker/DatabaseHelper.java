@@ -81,7 +81,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String CREATE_TABLE_INVOICE = "CREATE TABLE " + TABLE_INVOICE + "(" +
             INV_NO + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            INV_DATE + " TEXT, " +
+            INV_DATE + " TEXT DEFAULT CURRENT_DATE, "  +
             INV_TOTAL_PRICE + " REAL, " +
             INV_SALES_REP_ID + " INTEGER, " +
             INV_LOC_ID + " INTEGER, " +
@@ -178,7 +178,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(SR_SUPERVISED_LOC, rep.getSupervisedLocId());
 
         long id = db.insert(TABLE_SALES_REP, null, values);
-        db.close();
+        ////db.close();
         return id;
     }
 
@@ -186,6 +186,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public List<SalesRepresentative> getAllSalesReps() {
         List<SalesRepresentative> reps = new ArrayList<>();
+
+        // Check if the SalesRepresentative table exists
+        if (!isTableExists(TABLE_SALES_REP)) {
+            return reps; // Return an empty list if the table doesn't exist
+        }
+
+        // Check if the table has any data
+        if (isTableEmpty(TABLE_SALES_REP)) {
+            return reps; // Return an empty list if the table is empty
+        }
         SQLiteDatabase db = this.getReadableDatabase();
 
         // SQL query to join SalesRep table with Location table to get location names
@@ -221,7 +231,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
 
         cursor.close();
-        db.close();
+        ////db.close();
         return reps;
     }
 
@@ -243,14 +253,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
 
         int rowsAffected = db.update(TABLE_SALES_REP, values, SR_ID + " = ?", new String[]{String.valueOf(rep.getId())});
-        db.close();
+       // //db.close();
         return rowsAffected;
     }
 
     public int deleteSalesRep(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
         int rowsDeleted = db.delete(TABLE_SALES_REP, SR_ID + " = ?", new String[]{String.valueOf(id)});
-        db.close();
+        ////db.close();
         return rowsDeleted;
     }
 
@@ -276,7 +286,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             rep.setSupervisedLocId(cursor.getInt(cursor.getColumnIndexOrThrow(SR_SUPERVISED_LOC)));
             cursor.close();
         }
-        db.close();
+        ////db.close();
         return rep;
     }
 
@@ -296,7 +306,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             } while (cursor.moveToNext());
         }
         cursor.close();
-        db.close();
+        //db.close();
         return locations;
     }
 
@@ -308,7 +318,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(LOC_ADDRESS, location.getAddress());
 
         long id = db.insert(TABLE_LOCATION, null, values);
-        db.close();
+        //db.close();
         return id;
     }
     public long addInvoice(Invoice invoice) {
@@ -320,7 +330,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(INV_LOC_ID, invoice.getLocId());
 
         long id = db.insert(TABLE_INVOICE, null, values);
-        db.close();
+        //db.close();
         return id;
     }
     public List<Invoice> getInvoicesByRepAndMonth(int repId, String month, String year) {
@@ -348,7 +358,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
 
         cursor.close();
-        db.close();
+        //db.close();
         return invoices;
     }
     public long addMonthlyRepSales(MonthlyRepSales sales) {
@@ -360,7 +370,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(MRS_LOC_ID, sales.getLocId());
 
         long id = db.insert(TABLE_MONTHLY_SALES, null, values);
-        db.close();
+        //db.close();
         return id;
     }
     public long addMonthlyRepCommission(MonthlyRepCommission commission) {
@@ -372,7 +382,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(MRC_LOC_ID, commission.getLocId());
 
         long id = db.insert(TABLE_MONTHLY_COMMISSION, null, values);
-        db.close();
+        //db.close();
         return id;
     }
     public double calculateCommission(int repId, String month, String year) {
@@ -442,7 +452,58 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
 
         cursor.close();
-        db.close();
+        //db.close();
         return locId;
+    }
+    public int getSalesRepIdByName(String name) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        if (!isTableExists(TABLE_SALES_REP)) {
+            return 0; // Return an empty list if the table doesn't exist
+        }
+
+        // Check if the table has any data
+        if (isTableEmpty(TABLE_SALES_REP)) {
+            return 0; // Return an empty list if the table is empty
+        }
+        String query = "SELECT " + SR_ID + " FROM " + TABLE_SALES_REP + " WHERE " + SR_NAME + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{name});
+        if (cursor.moveToFirst()) {
+            int id = cursor.getInt(0);
+            cursor.close();
+            return id;
+        }
+        cursor.close();
+        return -1; // Not found
+    }
+    public boolean isTableExists(String tableName) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name=?", new String[]{tableName});
+        boolean exists = cursor.getCount() > 0;
+        cursor.close();
+        //db.close();
+        return exists;
+    }
+    public boolean isTableEmpty(String tableName) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM " + tableName, null);
+        boolean isEmpty = true;
+        if (cursor.moveToFirst()) {
+            isEmpty = cursor.getInt(0) == 0;
+        }
+        cursor.close();
+        //db.close();
+        return isEmpty;
+    }
+
+    public int getLocationIdByName(String name) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT "+LOC_ID+" FROM " + TABLE_LOCATION+" WHERE "+LOC_NAME+" =?", new String[]{name});
+        if (cursor.moveToFirst()) {
+            int id = cursor.getInt(0);
+            cursor.close();
+            return id;
+        }
+        cursor.close();
+        return -1; // Not found
     }
 }

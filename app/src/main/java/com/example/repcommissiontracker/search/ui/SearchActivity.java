@@ -2,9 +2,9 @@ package com.example.repcommissiontracker.search.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.repcommissiontracker.Invoice.InvoiceAdd;
 import com.example.repcommissiontracker.MainActivity;
 import com.example.repcommissiontracker.R;
@@ -13,29 +13,42 @@ import com.example.repcommissiontracker.Settings.SettingsActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-
 public class SearchActivity extends AppCompatActivity {
-    FloatingActionButton fab;
-    BottomNavigationView bottomNavigationView;
-    Intent intent;
+
+    private FloatingActionButton fab;
+    private BottomNavigationView bottomNavigationView;
+    private Intent intent;
+    private Button btnSales, btnCommission;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
-         bottomNavigationView = findViewById(R.id.bottomNavigationView);
-        fab = findViewById(R.id.fab);
-        intent = null;
-        fab.setOnClickListener(v ->{ intent = new Intent(this, InvoiceAdd.class) ;
-            bottomNavigationView.setOnNavigationItemSelectedListener(null);
-            bottomNavigationView.setSelectedItemId(R.id.placeholder);
-            if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                overridePendingTransition(0, 0); // No animation between activities
-            }});
-        bottomNavigationView.setBackground(null); // Remove background for transparency
-        bottomNavigationView.setSelectedItemId(R.id.search);
 
+        initializeViews();
+        setupFab();
+        setupBottomNavigation();
+    }
+
+    private void initializeViews() {
+        bottomNavigationView = findViewById(R.id.bottomNavigationView);
+        fab = findViewById(R.id.fab);
+        btnSales = findViewById(R.id.btnSales);
+        btnCommission = findViewById(R.id.btnCommission);
+
+        intent = null;
+    }
+
+    private void setupFab() {
+        fab.setOnClickListener(v -> {
+            intent = new Intent(this, InvoiceAdd.class);
+            navigateToActivity(intent);
+        });
+    }
+
+    private void setupBottomNavigation() {
+        bottomNavigationView.setBackground(null);
+        bottomNavigationView.setSelectedItemId(R.id.search);
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             Intent intent = null;
 
@@ -55,21 +68,27 @@ public class SearchActivity extends AppCompatActivity {
             }
 
             if (intent != null) {
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                overridePendingTransition(0, 0); // No animation between activities
+                navigateToActivity(intent);
             }
-
-            return true; // Return true to indicate item selection
+            return true;
         });
     }
+
+    private void navigateToActivity(Intent intent) {
+        bottomNavigationView.setOnNavigationItemSelectedListener(null);
+        bottomNavigationView.setSelectedItemId(R.id.placeholder);
+        if (intent != null) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            overridePendingTransition(0, 0);
+        }
+    }
+
     @Override
     public void onBackPressed() {
         super.onBackPressed();
         Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
+        navigateToActivity(intent);
         finish();
     }
-
 }

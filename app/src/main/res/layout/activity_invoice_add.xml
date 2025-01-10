@@ -6,5 +6,74 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Invoice.InvoiceAdd">
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/topAppBar"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:background="@android:color/holo_orange_light"
+        app:title="Add invoice"
+        app:titleTextAppearance="@style/TextAppearance.AppCompat.Widget.ActionBar.Menu"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:titleTextColor="@android:color/black"
+        android:textDirection="firstStrong"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="70dp"
+        android:orientation="vertical"
+        android:padding="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/topAppBar">
+
+
+        <EditText
+            android:id="@+id/edt_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Date (YYYY-MM-DD)"
+            android:inputType="date" />
+
+        <EditText
+            android:id="@+id/edt_total_price"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Total Price"
+            android:inputType="numberDecimal" />
+
+        <Spinner
+            android:id="@+id/spn_sales_rep"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Spinner
+            android:id="@+id/spn_location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/btn_save"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@android:color/holo_orange_light"
+            android:text="Save"
+            android:textColor="@color/black" />
+
+        <Button
+            android:id="@+id/btn_cancel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@android:color/holo_orange_light"
+            android:text="Cancel"
+            android:textColor="@color/black" />
+
+    </LinearLayout>
+
     <include layout="@layout/bottom_nav" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
