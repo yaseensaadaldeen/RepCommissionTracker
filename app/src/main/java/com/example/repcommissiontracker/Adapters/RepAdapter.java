@@ -50,7 +50,7 @@ public class RepAdapter extends RecyclerView.Adapter<RepAdapter.RepViewHolder> {
         holder.nameTextView.setText(rep.getName());
         holder.phoneTextView.setText("Phone: " + rep.getPhoneNumber());
         holder.startDateTextView.setText("Start Date: " + rep.getStartDate());
-        holder.locationTextView.setText("Location ID: " + rep.getSupervisedLocName());
+        holder.locationTextView.setText("Location: " + rep.getSupervisedLocName());
         holder.itemView.setOnClickListener(v -> {
             if (onRepClickListener != null) {
                 onRepClickListener.onRepClick(rep);
