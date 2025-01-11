@@ -9,7 +9,11 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-import com.example.repcommissiontracker.Classes.*;
+import com.example.repcommissiontracker.Classes.Invoice;
+import com.example.repcommissiontracker.Classes.Location;
+import com.example.repcommissiontracker.Classes.MonthlyRepCommission;
+import com.example.repcommissiontracker.Classes.MonthlyRepSales;
+import com.example.repcommissiontracker.Classes.SalesRepresentative;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -88,7 +92,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             INV_TOTAL_PRICE + " REAL, " +
             INV_SALES_REP_ID + " INTEGER, " +
             INV_LOC_ID + " INTEGER, " +
-            "FOREIGN KEY(" + INV_SALES_REP_ID + ") REFERENCES " + TABLE_SALES_REP + "(" + SR_ID + "), " +
+            "FOREIGN KEY(" + INV_SALES_REP_ID + ") REFERENCES " + TABLE_SALES_REP + "(" + SR_ID + ") ON DELETE CASCADE, " +
             "FOREIGN KEY(" + INV_LOC_ID + ") REFERENCES " + TABLE_LOCATION + "(" + LOC_ID + ")" +
             ");";
 
@@ -99,7 +103,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             MRS_REP_ID + " INTEGER, " +
             MRS_LOC_ID + " INTEGER, " +
             MRS_Year + " INTEGER, " +
-            "FOREIGN KEY(" + MRS_REP_ID + ") REFERENCES " + TABLE_SALES_REP + "(" + SR_ID + "), " +
+            "FOREIGN KEY(" + MRS_REP_ID + ") REFERENCES " + TABLE_SALES_REP + "(" + SR_ID + ") ON DELETE CASCADE, " +
             "FOREIGN KEY(" + MRS_LOC_ID + ") REFERENCES " + TABLE_LOCATION + "(" + LOC_ID + ")" +
             ");";
 
@@ -110,7 +114,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             MRC_REP_ID + " INTEGER, " +
             MRC_LOC_ID + " INTEGER, " +
             MRC_Year + " INTEGER, " +
-            "FOREIGN KEY(" + MRC_REP_ID + ") REFERENCES " + TABLE_SALES_REP + "(" + SR_ID + "), " +
+            "FOREIGN KEY(" + MRC_REP_ID + ") REFERENCES " + TABLE_SALES_REP + "(" + SR_ID + ") ON DELETE CASCADE, " +
             "FOREIGN KEY(" + MRC_LOC_ID + ") REFERENCES " + TABLE_LOCATION + "(" + LOC_ID + ")" +
             ");";
 
@@ -170,11 +174,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(SR_NAME, rep.getName());
 
-        // Convert the Bitmap image to byte[] and store it
+        // Convert the Bitmap image to byte[] and store it after resizing it
         if (rep.getImageBitmap() != null) {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             rep.getImageBitmap().compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
             byte[] imageByteArray = byteArrayOutputStream.toByteArray();
+
+            // Apply imagemTratada method to resize the image if needed
+            imageByteArray = imagemTratada(imageByteArray);
+
             values.put(SR_IMAGE, imageByteArray);
         }
 
@@ -182,11 +190,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(SR_START_DATE, rep.getStartDate());
         values.put(SR_SUPERVISED_LOC, rep.getSupervisedLocId());
 
+        // Insert the values into the database
         long id = db.insert(TABLE_SALES_REP, null, values);
-        ////db.close();
+        //db.close(); // Optional to close the database, or you can use db.close() after the insert operation if needed
         return id;
     }
+    private byte[] imagemTratada(byte[] imagem_img){
 
+        while (imagem_img.length > 500000){
+            Bitmap bitmap = BitmapFactory.decodeByteArray(imagem_img, 0, imagem_img.length);
+            Bitmap resized = Bitmap.createScaledBitmap(bitmap, (int)(bitmap.getWidth()*0.8), (int)(bitmap.getHeight()*0.8), true);
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            resized.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            imagem_img = stream.toByteArray();
+        }
+        return imagem_img;
+
+    }
 
 
     public List<SalesRepresentative> getAllSalesReps() {
@@ -338,7 +358,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         //db.close();
         return id;
     }
-    public List<Invoice> getInvoicesByRepAndMonth(int repId, String month, String year) {
+
+    public List<Invoice> getInvoicesByRepAndMonth(int repId, int month, int year) {
         List<Invoice> invoices = new ArrayList<>();
         String selectQuery = "SELECT * FROM " + TABLE_INVOICE + " WHERE "
                 + INV_SALES_REP_ID + " = ? AND strftime('%m', " + INV_DATE + ") = ? AND strftime('%Y', " + INV_DATE + ") = ?";
@@ -346,8 +367,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, new String[]{
                 String.valueOf(repId),
-                month,
-                year
+                String.format("%02d", month),
+                String.valueOf(year)
         });
 
         if (cursor.moveToFirst()) {
@@ -366,6 +387,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         //db.close();
         return invoices;
     }
+
     public long addMonthlyRepSales(MonthlyRepSales sales) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -373,7 +395,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(MRS_SALES_VALUE, sales.getSalesValue());
         values.put(MRS_REP_ID, sales.getRepId());
         values.put(MRS_LOC_ID, sales.getLocId());
-        values.put(MRS_Year, sales.getLocId());
+        values.put(MRS_Year, sales.getYear());
 
         long id = db.insert(TABLE_MONTHLY_SALES, null, values);
         //db.close();
@@ -386,12 +408,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(MRC_COMMISSION_VALUE, commission.getCommissionValue());
         values.put(MRC_REP_ID, commission.getRepId());
         values.put(MRC_LOC_ID, commission.getLocId());
+        values.put(MRC_Year, commission.getYear());
 
         long id = db.insert(TABLE_MONTHLY_COMMISSION, null, values);
         //db.close();
         return id;
     }
-    public double calculateCommission(int repId, String month, String year) {
+
+    public double calculateCommission(int repId, int month, int year) {
         List<Invoice> invoices = getInvoicesByRepAndMonth(repId, month, year);
         double totalCommission = 0.0;
 
@@ -442,7 +466,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             commissionRecord.setCommissionValue(commission);
             commissionRecord.setRepId(repId);
             commissionRecord.setLocId(locId);
-            addMonthlyRepCommission(commissionRecord);
+            //addMonthlyRepCommission(commissionRecord);
         }
 
         return totalCommission;
@@ -512,17 +536,46 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
         return -1; // Not found
     }
+
+    @SuppressLint("Range")
     public boolean isMonthlySalesExist(long repId, int month, int year) {
+
         SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT * FROM " + TABLE_MONTHLY_SALES +
+        String query = "SELECT 1 FROM " + TABLE_MONTHLY_SALES +
                 " WHERE " + MRS_REP_ID + " = ? AND " +
                 MRS_MONTH + " = ? AND " +
-                MRS_Year+ " = ?";
-        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(repId), String.valueOf(month), String.valueOf(year)});
-        boolean exists = cursor.getCount() > 0;
-        cursor.close();
-        return exists;
+                MRS_Year + " = ? LIMIT 1";
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery(query, new String[]{String.valueOf(repId), String.valueOf(month), String.valueOf(year)});
+            return cursor.moveToFirst(); // Returns true if the cursor has at least one row
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
     }
+
+    @SuppressLint("Range")
+    public boolean isMonthlyCommExist(long repId, int month, int year) {
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT 1 FROM " + TABLE_MONTHLY_COMMISSION +
+                " WHERE " + MRC_REP_ID + " = ? AND " +
+                MRC_MONTH + " = ? AND " +
+                MRC_Year + " = ? LIMIT 1";
+        Cursor cursor = null;
+        try {
+            cursor = db.rawQuery(query, new String[]{String.valueOf(repId), String.valueOf(month), String.valueOf(year)});
+            return cursor.moveToFirst(); // Returns true if the cursor has at least one row
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+
 
     public double calculateTotalSalesForRep(long repId, int month, int year) {
         SQLiteDatabase db = this.getReadableDatabase();
@@ -545,8 +598,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(MRS_MONTH, sales.getMonth());
         values.put(MRS_Year, sales.getYear()); // Include year in the update
 
-        db.update(TABLE_MONTHLY_SALES, values, MRS_REP_ID + " = ? AND " + MRS_MONTH + " = ? AND Year = ?",
+        db.update(TABLE_MONTHLY_SALES, values, MRS_REP_ID + " = ? AND " + MRS_MONTH + " = ? AND "+ MRS_Year +" = ?",
                 new String[]{String.valueOf(sales.getRepId()), String.valueOf(sales.getMonth()), String.valueOf(sales.getYear())});
+    }
+
+    public void updateMonthlyRepComm(MonthlyRepCommission commission) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(MRC_COMMISSION_VALUE, commission.getCommissionValue());
+        values.put(MRS_MONTH, commission.getMonth());
+        values.put(MRS_Year, commission.getYear()); // Include year in the update
+
+        db.update(TABLE_MONTHLY_COMMISSION, values, MRC_REP_ID + " = ? AND " + MRC_MONTH + " = ? AND " + MRC_Year + " = ?",
+                new String[]{String.valueOf(commission.getRepId()), String.valueOf(commission.getMonth()), String.valueOf(commission.getYear())});
     }
 
     public long getRepIdByName(String name) {

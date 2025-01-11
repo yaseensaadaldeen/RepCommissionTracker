@@ -34,6 +34,7 @@
                     android:layout_alignParentTop="true"
                     android:layout_marginTop="15dp"
                     android:background="#F4F4F4"
+                    android:paddingBottom="100dp"
                     android:outlineAmbientShadowColor="@android:color/holo_orange_light"
                     android:outlineSpotShadowColor="@android:color/holo_orange_light"
                     tools:targetApi="p">

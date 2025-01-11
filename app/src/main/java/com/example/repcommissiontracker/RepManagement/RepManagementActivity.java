@@ -41,6 +41,8 @@ public class RepManagementActivity extends AppCompatActivity implements rep_mana
     RepAdapter adapter;
     private rep_manage_dialog listDialog; // Declare the dialog here
 
+    SalesRepresentative selectedrep;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -150,6 +152,7 @@ public class RepManagementActivity extends AppCompatActivity implements rep_mana
     }
     private void setupAddRepButton(RecyclerView recyclerView) {
         addRepButton.setOnClickListener(v -> {
+            selectedrep = null;
             if (listDialog != null) {
                 listDialog.resetFields(); // Reset fields to clear old data
             }
@@ -192,6 +195,7 @@ public class RepManagementActivity extends AppCompatActivity implements rep_mana
                 List<SalesRepresentative> repList2 = dbHelper2.getAllSalesReps();
                 adapter.updateData(repList2);
             });
+            selectedrep=rep;
         });
         recyclerView.setAdapter(adapter);
     }
@@ -218,7 +222,26 @@ public class RepManagementActivity extends AppCompatActivity implements rep_mana
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
                 if (listDialog != null) {
-                    listDialog.onImagePicked(bitmap);
+                    if (selectedrep!=null) {
+                        selectedrep.setImageBitmap(bitmap);
+                        listDialog.setSalesRepresentative(selectedrep);
+                        listDialog.onImagePicked(bitmap);
+                        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+                        lp.copyFrom(listDialog.getWindow().getAttributes());
+                        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+                        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+                        listDialog.show();
+                        listDialog.getWindow().setAttributes(lp);
+                        listDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                        listDialog.setOnDismissListener(s -> {
+                            DatabaseHelper dbHelper2 = new DatabaseHelper(RepManagementActivity.this);
+                            List<SalesRepresentative> repList2 = dbHelper2.getAllSalesReps();
+                            if (adapter != null) {
+                                adapter.updateData(repList2);
+                            }
+                        });
+                    }
+                    else  listDialog.onImagePicked(bitmap);
                 }
             } catch (IOException e) {
                 e.printStackTrace();

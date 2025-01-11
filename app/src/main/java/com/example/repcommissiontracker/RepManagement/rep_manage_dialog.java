@@ -11,12 +11,12 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
 
@@ -38,15 +38,26 @@ public class rep_manage_dialog extends Dialog {
     private TextView txtDialogTitle, txtError;
     private Spinner locationSpinner;
     public static final int PICK_IMAGE_REQUEST = 1;
-    private ImageView imageViewRep;
+    public ImageView imageViewRep;
     private Bitmap selectedImageBitmap;
+
+    public SalesRepresentative getCurrentRep() {
+        return currentRep;
+    }
+
+    public void setCurrentRep(SalesRepresentative currentRep) {
+        this.currentRep = currentRep;
+    }
+
     private SalesRepresentative currentRep; // For editing
     private boolean isEditMode = false; // To determine dialog mode
+    Button selectImageButton;
 
     // Callback interface to pass data back to the Activity
     public interface ImageSelectionListener {
         void onImageSelected(Bitmap image);
     }
+
     private Bitmap pendingImageBitmap; // Temporary storage for selected image
 
     public void setPendingImage(Bitmap image) {
@@ -55,6 +66,7 @@ public class rep_manage_dialog extends Dialog {
             onImagePicked(image); // Apply the image if the dialog is initialized
         }
     }
+
     private ImageSelectionListener imageSelectionListener;
 
     public rep_manage_dialog(@NonNull Context context, ImageSelectionListener listener) {
@@ -71,6 +83,7 @@ public class rep_manage_dialog extends Dialog {
     public void setSalesRepresentative(SalesRepresentative rep) {
         this.currentRep = rep;
         this.isEditMode = true;
+        populateFieldsForEditing();
     }
 
     @Override
@@ -92,7 +105,7 @@ public class rep_manage_dialog extends Dialog {
         txtError = findViewById(R.id.error);
         locationSpinner = findViewById(R.id.spinner_locations);
         imageViewRep = findViewById(R.id.image_view_rep);
-        Button selectImageButton = findViewById(R.id.select_image_button);
+        selectImageButton = findViewById(R.id.select_image_button);
 
         selectImageButton.setOnClickListener(v -> openImageChooser());
         // Apply the pending image if available
@@ -134,6 +147,7 @@ public class rep_manage_dialog extends Dialog {
         }
 
     }
+
     private RepManagementActivity.ImageUpdateListener imageUpdateListener;
 
     public void setImageUpdateListener(RepManagementActivity.ImageUpdateListener listener) {
@@ -142,18 +156,23 @@ public class rep_manage_dialog extends Dialog {
 
 
     private void openImageChooser() {
+
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         intent.setType("image/*");
         if (context instanceof Activity) {
+
             ((Activity) context).startActivityForResult(intent, PICK_IMAGE_REQUEST);
+            if (isEditMode) dismiss();
         }
     }
 
     public void onImagePicked(Bitmap image) {
         if (image != null) {
             this.selectedImageBitmap = image;
-            if (imageViewRep != null)
+            if (imageViewRep != null) {
                 imageViewRep.setImageBitmap(image);
+
+            } else imageViewRep = findViewById(R.id.image_view_rep);
 
             // Update the image in the SalesRepresentative object if editing
             if (isEditMode && currentRep != null) {
@@ -174,6 +193,8 @@ public class rep_manage_dialog extends Dialog {
     }
 
     private void populateFieldsForEditing() {
+        if (edtName != null) {
+
         edtName.setText(currentRep.getName());
         edtPhone.setText(currentRep.getPhoneNumber());
         edtStartDate.setText(currentRep.getStartDate());
@@ -198,6 +219,7 @@ public class rep_manage_dialog extends Dialog {
         txtDialogTitle.setText("تعديل المندوب");
         btnSave.setText("تعديل");
         btnDelete.setVisibility(View.VISIBLE); // Make the "Delete" button visible
+    }
     }
 
     public void resetFields() {
@@ -288,7 +310,7 @@ public class rep_manage_dialog extends Dialog {
     private void confirmAndDeleteSalesRep() {
         new AlertDialog.Builder(context)
                 .setTitle("تأكيد الحذف")
-                .setMessage("هل أنت متأكد من حذف المندوب؟")
+                .setMessage("هل أنت متأكد من حذف المندوب؟ عند حذف المندوب ستحذف جميع الفواتير والعمولات")
                 .setPositiveButton("نعم", (dialog, which) -> {
                     DatabaseHelper dbHelper = new DatabaseHelper(context);
                     int success = dbHelper.deleteSalesRep(currentRep.getId());

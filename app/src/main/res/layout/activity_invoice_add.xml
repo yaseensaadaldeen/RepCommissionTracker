@@ -37,7 +37,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Date (YYYY-MM-DD)"
-            android:inputType="date" />
+            android:inputType="date"
+            android:layout_marginBottom="8dp"/>
 
         <EditText
             android:id="@+id/edt_total_price"
@@ -45,12 +46,23 @@
             android:layout_height="wrap_content"
             android:hint="Total Price"
             android:inputType="numberDecimal" />
-
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="المندوب"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp"/>
         <Spinner
             android:id="@+id/spn_sales_rep"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="الموقع"
+            android:textSize="16sp"
+            android:layout_marginBottom="8dp"/>
         <Spinner
             android:id="@+id/spn_location"
             android:layout_width="match_parent"

@@ -1,14 +1,99 @@
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".search.ui.RepCommFragment">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="16dp">
 
-    <!-- TODO: Update blank fragment layout -->
+    <!-- Spinner for Sales Rep -->
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content"
+        android:text="المندوب"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp"/>
 
-</FrameLayout>
+    <Spinner
+        android:id="@+id/spinnerRep"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxLength="50"
+        android:padding="10dp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Month and Year selection -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="الشهر والسنة"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp">
+
+        <EditText
+            android:id="@+id/editTextMonth"
+            android:layout_width="0dp"
+            android:background="@drawable/textedit_shape"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="الشهر (1-12)"
+            android:inputType="number"
+            android:maxLength="50"
+            android:padding="10dp"
+            android:layout_marginEnd="8dp"
+            android:textColor="@color/black"
+            android:textColorHint="@android:color/holo_orange_dark" />
+
+        <EditText
+            android:id="@+id/editTextYear"
+            android:layout_width="0dp"
+            android:background="@drawable/textedit_shape"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:maxLength="50"
+            android:padding="10dp"
+            android:hint="السنة (مثال: 2025)"
+            android:inputType="number"
+            android:textColor="@color/black"
+            android:textColorHint="@android:color/holo_orange_dark" />
+    </LinearLayout>
+
+    <!-- Button to Insert or Edit Sales -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="إدخال أو تعديل العمولات"
+        android:textSize="16sp"
+        android:layout_marginBottom="8dp" />
+
+    <Button
+        android:id="@+id/buttonSubmit"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@+id/spinner_locations"
+        android:layout_gravity="center"
+        android:layout_marginStart="100dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="100dp"
+        android:backgroundTint="@android:color/holo_orange_light"
+        android:text="إرسال"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:cornerRadius="13dp" />
+
+    <!-- TextView to show inserted data -->
+    <TextView
+        android:id="@+id/textViewResult"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="سيتم عرض النتائج هنا"
+        android:textSize="20sp"
+        android:paddingTop="16dp" />
+
+</LinearLayout>

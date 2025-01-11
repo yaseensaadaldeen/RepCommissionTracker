@@ -2,13 +2,15 @@ package com.example.repcommissiontracker.Classes;
 
 public class MonthlyRepCommission {
     private int id;
-    private String month;
+    private int month;
+    private int year;
     private double commissionValue;
     private int repId;
     private int locId;
-    public MonthlyRepCommission(int id, String month, double commissionValue, int repId, int locId) {
+    public MonthlyRepCommission(int id, int month, double commissionValue, int repId, int locId) {
         this.id = id;
         this.month = month;
+        this.year = year;
         this.commissionValue = commissionValue;
         this.repId = repId;
         this.locId = locId;
@@ -26,13 +28,22 @@ public class MonthlyRepCommission {
         this.id = id;
     }
 
-    public String getMonth() {
+    public int getMonth() {
         return month;
     }
 
-    public void setMonth(String month) {
+    public int getYear() {
+        return year;
+    }
+
+    public void setYear(int year) {
+        this.year = year;
+    }
+
+    public void setMonth(int month) {
         this.month = month;
     }
+
 
     public double getCommissionValue() {
         return commissionValue;

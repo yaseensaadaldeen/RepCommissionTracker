@@ -2,9 +2,12 @@ package com.example.repcommissiontracker.search.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.repcommissiontracker.Invoice.InvoiceAdd;
@@ -32,28 +35,53 @@ public class SearchActivity extends AppCompatActivity {
         setupBottomNavigation();
     }
 
+
     private void initializeViews() {
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
         fab = findViewById(R.id.fab);
         btnSales = findViewById(R.id.btnSales);
         btnCommission = findViewById(R.id.btnCommission);
-        btnSales.setOnClickListener(v -> {
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragmentContainer, new RepSalesFragment());
-            transaction.addToBackStack(null);  // Allows going back to SearchActivity
-            transaction.commit();
-        });
 
-        // Navigate to Rep Commission Fragment
-        btnCommission.setOnClickListener(v -> {
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragmentContainer, new RepCommFragment());
-            transaction.addToBackStack(null);  // Allows going back to SearchActivity
-            transaction.commit();
-        });
+        // Remove fragment transactions from buttons
+        btnSales.setOnClickListener(v -> loadFragment(new RepSalesFragment(), "مبيعات المندوبين"));
+
+        // Navigate to the RepCommFragment
+        btnCommission.setOnClickListener(v -> loadFragment(new RepCommFragment(), "عمولات المندوبين"));
+
+        setupToolbar();
+
         intent = null;
     }
+    private void loadFragment(Fragment fragment, String title) {
+        // Hide buttons when navigating to a fragment
+        btnSales.setVisibility(View.GONE);
+        btnCommission.setVisibility(View.GONE);
 
+        // Update toolbar title
+        Toolbar toolbar = findViewById(R.id.topAppBar);
+        toolbar.setTitle(title);
+
+        // Set back button behavior to mimic the physical back button
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
+
+        // Replace the fragment
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, fragment);
+        transaction.addToBackStack(null); // Add to back stack for proper navigation
+        transaction.commit();
+    }
+
+
+    private void setupToolbar() {
+        Toolbar toolbar = findViewById(R.id.topAppBar);
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationOnClickListener(v -> navigateToMainActivity());
+    }
+    private void navigateToMainActivity() {
+        Intent intent = new Intent(this, MainActivity.class);
+        navigateToActivity(intent);
+    }
     private void setupFab() {
         fab.setOnClickListener(v -> {
             intent = new Intent(this, InvoiceAdd.class);
@@ -101,9 +129,23 @@ public class SearchActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-        Intent intent = new Intent(this, MainActivity.class);
-        navigateToActivity(intent);
-        finish();
+        if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            // If a fragment is in the back stack, pop it
+            getSupportFragmentManager().popBackStack();
+
+            // Show buttons and reset toolbar for SearchActivity
+            btnSales.setVisibility(View.VISIBLE);
+            btnCommission.setVisibility(View.VISIBLE);
+
+            Toolbar toolbar = findViewById(R.id.topAppBar);
+            toolbar.setTitle(("Search"));
+            toolbar.setNavigationIcon(null);
+        } else {
+            // If no fragments are in the back stack, navigate to MainActivity
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        }
     }
 }

@@ -11,6 +11,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import com.example.repcommissiontracker.Classes.Invoice;
 import com.example.repcommissiontracker.Classes.Location;
@@ -59,7 +60,7 @@ public class InvoiceAdd extends AppCompatActivity {
         // Populate Spinners
         setupSalesRepSpinner();
         setupLocationSpinner();
-
+        setupToolbar();
         // Button Listeners
         btnSave.setOnClickListener(v -> saveInvoice());
         btnCancel.setOnClickListener(v -> finish());
@@ -75,6 +76,15 @@ public class InvoiceAdd extends AppCompatActivity {
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, salesRepNames);
         spnSalesRep.setAdapter(adapter);
+    }
+    private void setupToolbar() {
+        Toolbar toolbar = findViewById(R.id.topAppBar);
+        setSupportActionBar(toolbar);
+        toolbar.setNavigationOnClickListener(v -> navigateToMainActivity());
+    }
+    private void navigateToMainActivity() {
+        Intent intent = new Intent(this, MainActivity.class);
+        navigateToActivity(intent);
     }
 
     private void setupLocationSpinner() {
@@ -96,6 +106,19 @@ public class InvoiceAdd extends AppCompatActivity {
             Toast.makeText(this, "Please enter the total price", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        // Validate date format and value
+        if (!isValidDate(date)) {
+            Toast.makeText(this, "Please enter a valid date in the format YYYY-MM-DD.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Check if the date is not in the future
+        if (isFutureDate(date)) {
+            Toast.makeText(this, "Date cannot be in the future.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
 
         DatabaseHelper dbHelper = new DatabaseHelper(this);
 
@@ -122,6 +145,26 @@ public class InvoiceAdd extends AppCompatActivity {
                     .show();
         } else {
             Toast.makeText(this, "Failed to add invoice", Toast.LENGTH_SHORT).show();
+        }
+    }
+    private boolean isValidDate(String date) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        sdf.setLenient(false); // Disallow invalid dates like 2023-13-32
+        try {
+            sdf.parse(date);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    private boolean isFutureDate(String date) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        try {
+            Date inputDate = sdf.parse(date);
+            Date currentDate = new Date();
+            return inputDate.after(currentDate);
+        } catch (Exception e) {
+            return false;
         }
     }
 
